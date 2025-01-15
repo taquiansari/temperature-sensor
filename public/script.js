@@ -1,65 +1,66 @@
-const tempDisplay = document.getElementById('temperature-display');
-const sliderContainer = document.getElementById('slider-container');
-const tempSlider = document.getElementById('temp-slider');
-const sliderValue = document.getElementById('slider-value');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+// Firebase configuration (replace with your config from Step 2)
+const firebaseConfig = {
+
+    apiKey: "AIzaSyDvW6qIV3bmEW1Am8cfbnxQ3GeRG32bSzs",
+  
+    authDomain: "temp-sensor-cc163.firebaseapp.com",
+  
+    databaseURL: "https://temp-sensor-cc163-default-rtdb.firebaseio.com",
+  
+    projectId: "temp-sensor-cc163",
+  
+    storageBucket: "temp-sensor-cc163.firebasestorage.app",
+  
+    messagingSenderId: "1054736172986",
+  
+    appId: "1:1054736172986:web:bab38a1ede68a8fa7ebf83"
+  
+  };
+  
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const tempDisplay = document.getElementById("temperature-display");
+const sliderContainer = document.getElementById("slider-container");
+const tempSlider = document.getElementById("temp-slider");
+const sliderValue = document.getElementById("slider-value");
 
 // Update temperature display function
 function updateDisplay(temperature) {
-    const temp = parseFloat(temperature).toFixed(1);
-    const [whole, decimal] = temp.split('.');
-    tempDisplay.innerHTML = `${whole}<span>.${decimal}</span><strong>&deg;</strong>`;
+  const temp = parseFloat(temperature).toFixed(1);
+  const [whole, decimal] = temp.split(".");
+  tempDisplay.innerHTML = `${whole}<span>.${decimal}</span><strong>&deg;</strong>`;
 }
 
 // Check if admin
-const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
+const isAdmin = new URLSearchParams(window.location.search).get("admin") === "true";
 if (isAdmin) {
-    sliderContainer.style.display = 'block';
-    
-    tempSlider.addEventListener('input', async (e) => {
-        const newTemp = e.target.value;
-        sliderValue.textContent = `${newTemp}°C`;
-        updateDisplay(newTemp);
-        
-        try {
-            const response = await fetch('/api/update-temperature', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ temperature: newTemp }),
-            });
-            
-            if (!response.ok) {
-                throw new Error('Failed to update temperature');
-            }
-        } catch (error) {
-            console.error('Error updating temperature:', error);
-        }
-    });
-}
+  sliderContainer.style.display = "block";
 
-// Initialize Pusher
-const pusher = new Pusher('5fb802724c40d44c295c', {
-    cluster: 'ap2'
-});
+  tempSlider.addEventListener("input", async (e) => {
+    const newTemp = e.target.value;
+    sliderValue.textContent = `${newTemp}°C`;
+    updateDisplay(newTemp);
 
-const channel = pusher.subscribe('temperature-channel');
-
-// Listen for temperature updates
-channel.bind('temperature-update', (data) => {
-    updateDisplay(data.temperature);
-});
-
-// Fetch initial temperature
-async function fetchTemperature() {
+    // Update temperature in Firebase Realtime Database
     try {
-        const response = await fetch('/api/update-temperature');
-        if (!response.ok) {
-            throw new Error('Failed to fetch temperature');
-        }
-        const data = await response.json();
-        updateDisplay(data.temperature);
+      await set(ref(db, "temperature"), { value: newTemp });
     } catch (error) {
-        console.error('Error fetching temperature:', error);
+      console.error("Error updating temperature:", error);
     }
+  });
 }
 
-fetchTemperature();
+// Listen for real-time updates
+const tempRef = ref(db, "temperature");
+onValue(tempRef, (snapshot) => {
+  const data = snapshot.val();
+  if (data && data.value) {
+    updateDisplay(data.value);
+  }
+});
