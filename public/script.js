@@ -1,3 +1,6 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+
 // Wait until the DOM is fully loaded before running the script
 document.addEventListener("DOMContentLoaded", () => {
     // Now we can safely access the DOM elements
