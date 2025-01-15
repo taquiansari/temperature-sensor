@@ -3,10 +3,13 @@ const sliderContainer = document.getElementById('slider-container');
 const tempSlider = document.getElementById('temp-slider');
 const sliderValue = document.getElementById('slider-value');
 
+// Check if the user is an admin by looking for `admin=true` in the URL query string
 const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
 
 if (isAdmin) {
     sliderContainer.style.display = 'block';
+
+    // Event listener to update temperature on the slider change
     tempSlider.addEventListener('input', async (e) => {
         const newTemp = e.target.value;
         sliderValue.textContent = `${newTemp}°C`;
@@ -21,12 +24,14 @@ if (isAdmin) {
     });
 }
 
-// Initialize Pusher
-const pusher = new Pusher('your-key', {
-    cluster: 'your-cluster',
+// Initialize Pusher using environment variables (they will be injected at build time by Next.js)
+const pusher = new Pusher(process.env.PUSHER_KEY, {
+    cluster: process.env.PUSHER_CLUSTER,  // Access cluster via environment variable
 });
 
 const channel = pusher.subscribe('temperature-channel');
+
+// Bind the event to update the temperature display when a new event is received
 channel.bind('temperature-update', (data) => {
     const temperature = parseFloat(data.temperature).toFixed(1);
     tempDisplay.innerHTML = `${Math.floor(temperature)}<span>.${temperature.split('.')[1]}</span><strong>&deg;</strong>`;
