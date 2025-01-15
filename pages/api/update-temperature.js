@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     try {
       // Make sure to use the same event name as in the frontend
-      await pusher.trigger("temperature-channel", "temperature-update", {
+      await pusher.trigger("temperature-channel", "update-temperature", {
         temperature,
       });
       res.status(200).json({ success: true, temperature });
