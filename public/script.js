@@ -16,7 +16,7 @@ if (isAdmin) {
         tempDisplay.innerHTML = `${Math.floor(newTemp)}<span>.${newTemp.split('.')[1] || 0}</span><strong>&deg;</strong>`;
 
         // Update temperature on server
-        await fetch('pages\api\update-temperature.js', {
+        await fetch('/api/update-temperature', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ temperature: newTemp }),
