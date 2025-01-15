@@ -1,12 +1,10 @@
-// Check if the user is admin
-const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
-
 const tempDisplay = document.getElementById('temperature-display');
 const sliderContainer = document.getElementById('slider-container');
 const tempSlider = document.getElementById('temp-slider');
 const sliderValue = document.getElementById('slider-value');
 
-// Show slider only if admin
+const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'true';
+
 if (isAdmin) {
     sliderContainer.style.display = 'block';
     tempSlider.addEventListener('input', async (e) => {
@@ -23,7 +21,18 @@ if (isAdmin) {
     });
 }
 
-// Fetch the current temperature from the server
+// Initialize Pusher
+const pusher = new Pusher('your-key', {
+    cluster: 'your-cluster',
+});
+
+const channel = pusher.subscribe('temperature-channel');
+channel.bind('temperature-update', (data) => {
+    const temperature = parseFloat(data.temperature).toFixed(1);
+    tempDisplay.innerHTML = `${Math.floor(temperature)}<span>.${temperature.split('.')[1]}</span><strong>&deg;</strong>`;
+});
+
+// Fetch the current temperature on page load
 async function fetchTemperature() {
     const res = await fetch('/api/update-temperature');
     const data = await res.json();
@@ -31,4 +40,3 @@ async function fetchTemperature() {
     tempDisplay.innerHTML = `${Math.floor(temperature)}<span>.${temperature.split('.')[1]}</span><strong>&deg;</strong>`;
 }
 fetchTemperature();
-setInterval(fetchTemperature, 5000); // Update every 5 seconds
