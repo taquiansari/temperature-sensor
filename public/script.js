@@ -25,8 +25,8 @@ if (isAdmin) {
 }
 
 // Initialize Pusher using environment variables (they will be injected at build time by Next.js)
-const pusher = new Pusher(process.env.PUSHER_KEY, {
-    cluster: process.env.PUSHER_CLUSTER,  // Access cluster via environment variable
+const pusher = new Pusher('5fb802724c40d44c295c', {
+    cluster: 'ap2'  // Access cluster via environment variable
 });
 
 const channel = pusher.subscribe('temperature-channel');
